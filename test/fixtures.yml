@@ -632,6 +632,13 @@ payflow_uk:
   password: PASSWORD
   partner: PayPalUk
 
+# Working credentials, no need to replace
+payfort:
+  merchant_identifier: lBmxhStQ
+  access_code: B7a8a41jtuK8YBi3dSnA
+  sha_request_phrase: test123
+  language: en
+
 payment_express:
   login: LOGIN
   password: PASSWORD
