@@ -154,7 +154,7 @@ module ActiveMerchant #:nodoc:
 
       def signature(args={})
         salt = self.options[:sha_request_phrase]
-        str = args.sort.reduce(salt) {|memo, (k,v)| memo << "#{k}=#{v}"} << salt
+        str = args.sort.reduce(salt) {|memo, (k,v)| memo += "#{k}=#{v}"} << salt
         Digest::SHA256.hexdigest(str).upcase
       end
     end
