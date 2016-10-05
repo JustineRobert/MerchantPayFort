@@ -80,11 +80,11 @@ module ActiveMerchant #:nodoc:
         post[:access_code] = self.options[:access_code]
         post[:merchant_reference] = self.options[:merchant_identifier]
         post[:language] = self.options[:language]
-        post[:remember_me] = parameters[:remember_me] ? 'YES' : 'NO'
         # NOTE: credit card token will be sent to return url as GET parameter
         post[:return_url] = parameters[:return_url]
         post[:signature] = signature(post)
 
+        post[:remember_me] = parameters[:remember_me] ? 'YES' : 'NO'
         post[:card_number] = credit_card.number
         post[:expiry_date] = "#{credit_card.year.to_s[-2,2]}#{credit_card.month}"
         post[:card_security_code] = credit_card.verification_value if credit_card.verification_value?
