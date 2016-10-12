@@ -8,8 +8,8 @@ module ActiveMerchant #:nodoc:
       self.credit_card_tokenization_test_url = 'https://sbcheckout.PayFort.com/FortAPI/paymentPage'
       self.credit_card_tokenization_live_url = 'https://checkout.PayFort.com/FortAPI/paymentPage'
 
-      self.test_url = ''
-      self.live_url = ''
+      self.test_url = 'https://sbpaymentservices.payfort.com/FortAPI/paymentApi'
+      self.live_url = 'https://paymentservices.payfort.com/FortAPI/paymentApi'
 
       self.supported_countries = ['AE']
       self.default_currency = 'AED'
@@ -27,12 +27,15 @@ module ActiveMerchant #:nodoc:
 
       def purchase(money, payment, options={})
         post = {}
+        post[:command] = 'PURCHASE'
+
         add_invoice(post, money, options)
         add_payment(post, payment)
-        add_address(post, payment, options)
         add_customer_data(post, options)
+        add_mandatory_fields(post, options)
+        add_security_settings(post)
 
-        commit('sale', post)
+        commit('PURCHASE', post)
       end
 
       def authorize(money, payment, options={})
@@ -97,6 +100,8 @@ module ActiveMerchant #:nodoc:
       private
 
       def add_customer_data(post, options)
+        post[:customer_email] = options[:customer_email]
+        # post[:customer_ip] = options[:customer_ip]
       end
 
       def add_address(post, creditcard, options)
@@ -108,7 +113,25 @@ module ActiveMerchant #:nodoc:
       end
 
       def add_payment(post, payment)
+        post[:token_name] = payment.token
+        post[:card_security_code] = payment.verification_value if payment.verification_value?
+        post[:customer_name] = payment.name
       end
+
+      def add_mandatory_fields(post, options)
+        post[:merchant_reference] = "#{self.options[:merchant_identifier]}-#{options[:order_id]}"
+        post[:language] = self.options[:language]
+      end
+
+      def add_security_settings(post)
+        post[:merchant_identifier] = self.options[:merchant_identifier]
+        post[:access_code] = self.options[:access_code]
+        # NOTE: credit card token will be sent to return url as GET parameter
+        # post[:return_url] = parameters[:return_url]
+        post[:signature] = signature(post)
+      end
+
+
 
       def parse(body)
         {}
@@ -116,7 +139,7 @@ module ActiveMerchant #:nodoc:
 
       def commit(action, parameters)
         url = (test? ? test_url : live_url)
-        response = parse(ssl_post(url, post_data(action, parameters)))
+        response = parse(ssl_post(url, post_data(action, parameters)), headers(action))
 
         Response.new(
           success_from(response),
@@ -140,10 +163,16 @@ module ActiveMerchant #:nodoc:
       end
 
       def post_data(action, parameters={})
+        return JSON.fast_generate(parameters) if action == 'PURCHASE'
+
         parameters.map do |key, value|
           escaped_value = CGI.escape(value.to_s)
           "#{key}=#{escaped_value}"
         end.join('&')
+      end
+
+      def headers(action)
+        action == 'PURCHASE' ? {'Content-Type' => 'application/json'} : {}
       end
 
       def error_code_from(response)
