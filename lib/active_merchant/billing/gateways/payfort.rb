@@ -12,6 +12,7 @@ module ActiveMerchant #:nodoc:
       self.live_url = 'https://paymentservices.payfort.com/FortAPI/paymentApi'
 
       self.supported_countries = ['AE']
+      self.money_format = :cents
       self.default_currency = 'AED'
       self.supported_cardtypes = [:visa, :master]
 
@@ -139,7 +140,7 @@ module ActiveMerchant #:nodoc:
 
       def commit(action, parameters)
         url = (test? ? test_url : live_url)
-        response = parse(ssl_post(url, post_data(action, parameters)), headers(action))
+        response = parse(ssl_post(url, post_data(action, parameters), headers(action)))
 
         Response.new(
           success_from(response),
