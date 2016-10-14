@@ -187,6 +187,7 @@ module ActiveMerchant #:nodoc:
         when 'TOKENIZATION'
           headers['Content-Type'] = 'application/x-www-form-urlencoded; charset=utf-8'
         end
+        headers
       end
 
       def error_code_from(response)
