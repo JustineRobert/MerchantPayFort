@@ -1,4 +1,5 @@
 require 'digest'
+require 'json'
 
 module ActiveMerchant #:nodoc:
   module Billing #:nodoc:
@@ -82,6 +83,7 @@ module ActiveMerchant #:nodoc:
         post[:service_command] = 'TOKENIZATION'
         post[:merchant_identifier] = self.options[:merchant_identifier]
         post[:access_code] = self.options[:access_code]
+        # FIXME: add order_id to merchant references
         post[:merchant_reference] = self.options[:merchant_identifier]
         post[:language] = self.options[:language]
         # NOTE: credit card token will be sent to return url as GET parameter
@@ -135,7 +137,7 @@ module ActiveMerchant #:nodoc:
 
 
       def parse(body)
-        {}
+        JSON.parse(body)
       end
 
       def commit(action, parameters)
@@ -155,9 +157,11 @@ module ActiveMerchant #:nodoc:
       end
 
       def success_from(response)
+        response['response_code'] == "00000"
       end
 
       def message_from(response)
+        response['response_message']
       end
 
       def authorization_from(response)
@@ -173,12 +177,21 @@ module ActiveMerchant #:nodoc:
       end
 
       def headers(action)
-        action == 'PURCHASE' ? {'Content-Type' => 'application/json'} : {}
+        headers = {}
+        headers['Accept-Encoding'] = 'gzip;q=1.0,deflate;q=0.6,identity;q=0.3'
+
+        case action
+        when 'PURCHASE'
+          headers['Accept'] = 'application/json'
+          headers['Content-Type'] = 'application/json; charset=utf-8'
+        when 'TOKENIZATION'
+          headers['Content-Type'] = 'application/x-www-form-urlencoded; charset=utf-8'
+        end
       end
 
       def error_code_from(response)
         unless success_from(response)
-          # TODO: lookup error code for this response
+          response['response_code']
         end
       end
 
