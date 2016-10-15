@@ -150,7 +150,7 @@ module ActiveMerchant #:nodoc:
           response,
           authorization: authorization_from(response),
           test: test?,
-          error_code: error_code_from(response)
+          error_code: error_code_from(response, action)
         )
       end
 
@@ -195,8 +195,8 @@ module ActiveMerchant #:nodoc:
         headers
       end
 
-      def error_code_from(response)
-        unless success_from(response)
+      def error_code_from(response, action)
+        unless success_from(response, action)
           response['response_code']
         end
       end
