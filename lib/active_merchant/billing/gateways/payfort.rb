@@ -145,19 +145,20 @@ module ActiveMerchant #:nodoc:
         response = parse(ssl_post(url, post_data(action, parameters), headers(action)))
 
         Response.new(
-          success_from(response),
+          success_from(response, action),
           message_from(response),
           response,
           authorization: authorization_from(response),
-          avs_result: AVSResult.new(code: response["some_avs_response_key"]),
-          cvv_result: CVVResult.new(response["some_cvv_response_key"]),
           test: test?,
           error_code: error_code_from(response)
         )
       end
 
-      def success_from(response)
-        response['response_code'] == "00000"
+      def success_from(response, action)
+        if action == 'PURCHASE'
+          response['status'] == '14' &&
+          response['response_code'] == "00000"
+        end
       end
 
       def message_from(response)
@@ -165,6 +166,7 @@ module ActiveMerchant #:nodoc:
       end
 
       def authorization_from(response)
+        response['authorization_code']
       end
 
       def post_data(action, parameters={})
@@ -182,10 +184,13 @@ module ActiveMerchant #:nodoc:
 
         case action
         when 'PURCHASE'
-          headers['Accept'] = 'application/json'
-          headers['Content-Type'] = 'application/json; charset=utf-8'
+          json = 'application/json'
+          headers['Accept'] = json
+          headers['Content-Type'] = "#{json}; charset=utf-8"
         when 'TOKENIZATION'
-          headers['Content-Type'] = 'application/x-www-form-urlencoded; charset=utf-8'
+          urlencoded = 'application/x-www-form-urlencoded'
+          headers['Accept'] = urlencoded
+          headers['Content-Type'] = "#{urlencoded}; charset=utf-8"
         end
         headers
       end
