@@ -35,7 +35,7 @@ module ActiveMerchant #:nodoc:
         add_payment(post, payment)
         add_customer_data(post, options)
         add_mandatory_fields(post, options)
-        add_security_settings(post)
+        add_security_settings(post, payment)
 
         commit('PURCHASE', post)
       end
@@ -125,12 +125,11 @@ module ActiveMerchant #:nodoc:
         post[:language] = self.options[:language]
       end
 
-      def add_security_settings(post)
+      def add_security_settings(post, payment)
         post[:merchant_identifier] = self.options[:merchant_identifier]
         post[:access_code] = self.options[:access_code]
-        # NOTE: credit card token will be sent to return url as GET parameter
-        # post[:return_url] = parameters[:return_url]
         post[:signature] = signature(post)
+        # NOTE: card_security_code should not be used to caclulate signature
         post[:card_security_code] = payment.verification_value if payment.verification_value?
       end
 
