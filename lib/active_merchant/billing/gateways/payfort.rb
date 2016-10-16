@@ -117,7 +117,6 @@ module ActiveMerchant #:nodoc:
 
       def add_payment(post, payment)
         post[:token_name] = payment.token
-        post[:card_security_code] = payment.verification_value if payment.verification_value?
         post[:customer_name] = payment.name
       end
 
@@ -132,9 +131,8 @@ module ActiveMerchant #:nodoc:
         # NOTE: credit card token will be sent to return url as GET parameter
         # post[:return_url] = parameters[:return_url]
         post[:signature] = signature(post)
+        post[:card_security_code] = payment.verification_value if payment.verification_value?
       end
-
-
 
       def parse(body)
         JSON.parse(body)
