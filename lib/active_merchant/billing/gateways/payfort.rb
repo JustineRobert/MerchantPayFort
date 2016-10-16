@@ -115,6 +115,7 @@ module ActiveMerchant #:nodoc:
         post[:currency] = (options[:currency] || currency(money))
       end
 
+      # NOTE: card_security_code should not be present in JSON
       def add_payment(post, payment)
         post[:token_name] = payment.token
         post[:customer_name] = payment.name
@@ -129,8 +130,6 @@ module ActiveMerchant #:nodoc:
         post[:merchant_identifier] = self.options[:merchant_identifier]
         post[:access_code] = self.options[:access_code]
         post[:signature] = signature(post)
-        # NOTE: card_security_code should not be used to caclulate signature
-        post[:card_security_code] = payment.verification_value if payment.verification_value?
       end
 
       def parse(body)
@@ -146,8 +145,7 @@ module ActiveMerchant #:nodoc:
           message_from(response),
           response,
           authorization: authorization_from(response),
-          test: test?,
-          error_code: error_code_from(response, action)
+          test: test?
         )
       end
 
@@ -190,12 +188,6 @@ module ActiveMerchant #:nodoc:
           headers['Content-Type'] = "#{urlencoded}; charset=utf-8"
         end
         headers
-      end
-
-      def error_code_from(response, action)
-        unless success_from(response, action)
-          response['response_code']
-        end
       end
 
       def signature(args={})
