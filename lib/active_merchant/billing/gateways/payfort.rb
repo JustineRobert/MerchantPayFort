@@ -84,7 +84,7 @@ module ActiveMerchant #:nodoc:
         post[:merchant_identifier] = self.options[:merchant_identifier]
         post[:access_code] = self.options[:access_code]
         # FIXME: add order_id to merchant references
-        post[:merchant_reference] = self.options[:merchant_identifier]
+        post[:merchant_reference] = [self.options[:merchant_identifier], parameters[:order_id]].join('-')
         post[:language] = self.options[:language]
         # NOTE: credit card token will be sent to return url as GET parameter
         post[:return_url] = parameters[:return_url]
@@ -92,7 +92,7 @@ module ActiveMerchant #:nodoc:
 
         post[:remember_me] = parameters[:remember_me] ? 'YES' : 'NO'
         post[:card_number] = credit_card.number
-        post[:expiry_date] = "#{credit_card.year.to_s[-2,2]}#{credit_card.month}"
+        post[:expiry_date] = "#{credit_card.year.to_s[-2,2]}#{credit_card.month.to_s.rjust(2, '0')}"
         post[:card_security_code] = credit_card.verification_value if credit_card.verification_value?
         post[:card_holder_name] = credit_card.name if credit_card.name
 
