@@ -97,7 +97,7 @@ module ActiveMerchant #:nodoc:
         post[:card_holder_name] = credit_card.name if credit_card.name
 
         url = test? ? self.class.credit_card_tokenization_test_url : self.class.credit_card_tokenization_live_url
-        ssl_request(:post, url, post_data('TOKENIZATION', post))
+        ssl_post(url, post_data('TOKENIZATION', post), headers('TOKENIZATION'))
       end
 
       private
