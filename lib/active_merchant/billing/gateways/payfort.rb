@@ -97,7 +97,7 @@ module ActiveMerchant #:nodoc:
         post[:card_holder_name] = credit_card.name if credit_card.name
 
         url = test? ? self.class.credit_card_tokenization_test_url : self.class.credit_card_tokenization_live_url
-        raw_ssl_request(:post, url, post_data('TOKENIZATION', post))
+        ssl_request(:post, url, post_data('TOKENIZATION', post))
       end
 
       private
@@ -175,6 +175,17 @@ module ActiveMerchant #:nodoc:
           escaped_value = CGI.escape(value.to_s)
           "#{key}=#{escaped_value}"
         end.join('&')
+      end
+
+      def handle_response(response)
+        case response.code.to_i
+        when 200...300
+          response.body
+        when 302
+          ssl_get(URI.parse(response['location']))
+        else
+          raise ResponseError.new(response)
+        end
       end
 
       def headers(action)
