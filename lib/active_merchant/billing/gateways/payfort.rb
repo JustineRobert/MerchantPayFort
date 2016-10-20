@@ -35,6 +35,7 @@ module ActiveMerchant #:nodoc:
         add_payment(post, payment)
         add_customer_data(post, options)
         add_mandatory_fields(post, options)
+        add_optional_fields(post, options)
         add_security_settings(post, payment)
 
         commit('PURCHASE', post)
@@ -83,8 +84,7 @@ module ActiveMerchant #:nodoc:
         post[:service_command] = 'TOKENIZATION'
         post[:merchant_identifier] = self.options[:merchant_identifier]
         post[:access_code] = self.options[:access_code]
-        # FIXME: add order_id to merchant references
-        post[:merchant_reference] = [self.options[:merchant_identifier], parameters[:order_id]].join('-')
+        post[:merchant_reference] = parameters[:order_id]
         post[:language] = self.options[:language]
         # NOTE: credit card token will be sent to return url as GET parameter
         post[:return_url] = parameters[:return_url]
@@ -122,8 +122,12 @@ module ActiveMerchant #:nodoc:
       end
 
       def add_mandatory_fields(post, options)
-        post[:merchant_reference] = "#{self.options[:merchant_identifier]}-#{options[:order_id]}"
+        post[:merchant_reference] = options[:order_id]
         post[:language] = self.options[:language]
+      end
+
+      def add_optional_fields(post, options)
+        post[:merchant_extra] = options[:merchant_extra] if options[:merchant_extra]
       end
 
       def add_security_settings(post, payment)
@@ -152,7 +156,7 @@ module ActiveMerchant #:nodoc:
       def success_from(response, action)
         if action == 'PURCHASE'
           response['status'] == '14' &&
-          response['response_code'] == "00000"
+          response['response_code'] == "14000"
         end
       end
 
