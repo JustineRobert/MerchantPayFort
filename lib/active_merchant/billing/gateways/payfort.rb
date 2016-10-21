@@ -88,6 +88,7 @@ module ActiveMerchant #:nodoc:
         post[:language] = self.options[:language]
         # NOTE: credit card token will be sent to return url as GET parameter
         post[:return_url] = parameters[:return_url]
+        post[:merchant_extra] = parameters[:merchant_extra]
         post[:signature] = signature(post)
 
         post[:remember_me] = parameters[:remember_me] ? 'YES' : 'NO'
