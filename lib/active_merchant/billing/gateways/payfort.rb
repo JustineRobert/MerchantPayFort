@@ -120,6 +120,7 @@ module ActiveMerchant #:nodoc:
       def add_payment(post, payment)
         post[:token_name] = payment.token
         post[:customer_name] = payment.name
+        post[:card_security_code] = credit_card.verification_value if credit_card.verification_value?
       end
 
       def add_mandatory_fields(post, options)
