@@ -120,7 +120,8 @@ module ActiveMerchant #:nodoc:
       def add_payment(post, payment)
         post[:token_name] = payment.token
         post[:customer_name] = payment.name
-        post[:card_security_code] = payment.verification_value if payment.verification_value?
+        # NOTE: cvv should be present on the second and succeeded purchase requests
+        post[:card_security_code] = payment.verification_value if payment.verification_value.present?
       end
 
       def add_mandatory_fields(post, options)
